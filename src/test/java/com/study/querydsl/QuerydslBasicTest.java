@@ -15,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 
 import java.util.List;
 
@@ -296,5 +298,29 @@ public class QuerydslBasicTest {
             System.out.println("tuple = " + tuple1);
 
         }
+    }
+
+    @PersistenceUnit
+    private EntityManagerFactory emf;
+
+    @Test
+    public void fetchJoinNo() {
+        em.flush();
+        em.clear();
+
+//        Member member = queryFactory
+//                .selectFrom(QMember.member)
+//                .join(member.team, team).fetchJoin()
+//                .where(QMember.member.memberName.eq("memberA"))
+//                .fetchOne();
+
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .join(member.team, team).fetchJoin()
+                .where(member.memberName.eq("memberA"))
+                .fetchOne();
+
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("페치 조인 적용").isTrue();
     }
 }
