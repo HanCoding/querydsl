@@ -2,7 +2,6 @@ package com.study.querydsl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.entity.Member;
-import com.study.querydsl.entity.QMember;
 import com.study.querydsl.entity.Team;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 
+import static com.study.querydsl.entity.QMember.*;
+
 @SpringBootTest
 @Transactional
 public class QuerydslBasicTest {
@@ -20,8 +21,12 @@ public class QuerydslBasicTest {
     @Autowired
     private EntityManager em;
 
+    private JPAQueryFactory queryFactory;
+
+
     @BeforeEach
     public void before() {
+        queryFactory = new JPAQueryFactory(em);
         Team teamA = new Team("teamA");
         Team teamB = new Team("teamB");
         em.persist(teamA);
@@ -49,13 +54,10 @@ public class QuerydslBasicTest {
 
     @Test
     public void startQuerydsl() {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        QMember m = new QMember("m");
-
         Member findMember = queryFactory
-                .select(m)
-                .from(m)
-                .where(m.memberName.eq("memberA"))
+                .select(member)
+                .from(member)
+                .where(member.memberName.eq("memberA"))
                 .fetchOne();
 
         Assertions.assertThat(findMember.getMemberName()).isEqualTo("memberA");
