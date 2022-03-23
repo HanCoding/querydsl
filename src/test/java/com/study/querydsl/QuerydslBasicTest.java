@@ -5,6 +5,7 @@ import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
@@ -602,5 +603,29 @@ public class QuerydslBasicTest {
                 .selectFrom(member)
                 .where(builder)
                 .fetch();
+    }
+
+    @Test
+    public void dynamicQueryWhereParam() {
+        String memberNameParam = "memberA";
+        Integer ageParam = null;
+
+        List<Member> result = searchMember2(memberNameParam, ageParam);
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember2(String memberNameCondition, Integer ageCondition) {
+        return queryFactory
+                .selectFrom(member)
+                .where(memberNameEq(memberNameCondition), ageEq(ageCondition))
+                .fetch();
+    }
+
+    private Predicate ageEq(Integer ageCondition) {
+        return ageCondition != null ? member.age.eq(ageCondition) : null ;
+    }
+
+    private Predicate memberNameEq(String memberNameCondition) {
+        return memberNameCondition != null ? member.memberName.eq(memberNameCondition) : null;
     }
 }
