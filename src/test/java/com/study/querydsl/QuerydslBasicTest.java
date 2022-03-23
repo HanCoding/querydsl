@@ -1,5 +1,6 @@
 package com.study.querydsl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
@@ -10,6 +11,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.dto.MemberDto;
+import com.study.querydsl.dto.QMemberDto;
 import com.study.querydsl.dto.UserDto;
 import com.study.querydsl.entity.Member;
 import com.study.querydsl.entity.QMember;
@@ -551,5 +553,54 @@ public class QuerydslBasicTest {
         for (UserDto memberDto : fetch) {
             System.out.println("memberDto = " + memberDto);
         }
+    }
+
+    @Test
+    public void findDto() {
+        List<MemberDto> fetch = queryFactory
+                .select(Projections.fields(MemberDto.class,
+                        member.memberName,
+                        member.age
+                ))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : fetch) {
+            System.out.println("memberDto : " + memberDto);
+
+        }
+    }
+
+    @Test
+    public void findQueryProjection() {
+        List<MemberDto> memberDto = queryFactory
+                .select(new QMemberDto(member.memberName, member.age))
+                .from(member)
+                .fetch();
+    }
+
+    @Test
+    public void dynamicQueryBooleanBuilder() {
+        String memberNameParam = "memberA";
+        Integer ageParam = null;
+
+        List<Member> result = searchMember1(memberNameParam, ageParam);
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember1(String memberNameCondition, Integer ageCondition) {
+
+        BooleanBuilder builder = new BooleanBuilder();
+        if(memberNameCondition != null) {
+            builder.and(member.memberName.eq(memberNameCondition));
+        }
+        if (ageCondition != null) {
+            builder.and(member.age.eq(ageCondition));
+        }
+
+        return queryFactory
+                .selectFrom(member)
+                .where(builder)
+                .fetch();
     }
 }
